@@ -1,3 +1,5 @@
+import logging
+
 from redis.asyncio import Redis
 
 from app.config import settings
@@ -10,8 +12,10 @@ async_redis = Redis(
     decode_responses=True,
 )
 
+# logging.info(f"{settings.REDIS_HOST}:{settings.REDIS_PORT}")
 
-async def get_redis():
+
+async def get_db():
     async with async_redis.client() as redis:
         try:
             yield redis

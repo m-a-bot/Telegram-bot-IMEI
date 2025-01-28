@@ -8,7 +8,7 @@ class IMEIValidationService:
             settings
         )
 
-    async def verify_imei(self, imei: str, token: str):
+    async def verify_imei(self, imei: str, token: str, user_id: int):
         return await self.check_imei_service.check_imei(
-            imei, token, settings.SERVICE_ID
+            imei, token, user_id, settings.SERVICE_ID
         )

@@ -21,16 +21,14 @@ class CheckIMEIService(ICheckIMEIService):
         return self.__url
 
     async def check_imei(
-        self, imei: str, token: str, service_id: int = 14
+        self, imei: str, token: str, user_id: int, service_id: int = 14
     ) -> dict:
         check_imei_url = urljoin(self.url, settings.CHECK_IMEI_URL)
 
         result = await send_request(
             endpoint=check_imei_url,
             method="POST",
-            query_params={
-                "token": token,
-            },
+            query_params={"token": token, "user_id": user_id},
             data={"deviceId": imei, "serviceId": service_id},
         )
         return result

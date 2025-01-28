@@ -19,13 +19,13 @@ class AccessControlService(IAccessControlService):
     def url(self):
         return self.__url
 
-    async def login_user(self, user_id: int, user_name: str) -> Any:
+    async def login_user(self, user_id: int) -> Any:
         login_user_url = urljoin(self.url, settings.LOGIN_USER_URL)
 
         token = await send_request(
             endpoint=login_user_url,
             method="POST",
-            query_params={"user_id": user_id, "user_name": user_name},
+            query_params={"user_id": user_id},
         )
         return token
 
@@ -40,7 +40,7 @@ class AccessControlService(IAccessControlService):
             },
         )
 
-    async def add_user_to_whitelist(self, user_id: int) -> Any:
+    async def add_user_to_whitelist(self, user_id: int, user_name: str) -> Any:
         add_user_to_whitelist_url = urljoin(
             self.url, settings.ADD_USER_TO_WHITELIST_URL
         )
@@ -48,9 +48,7 @@ class AccessControlService(IAccessControlService):
         await send_request(
             endpoint=add_user_to_whitelist_url,
             method="POST",
-            query_params={
-                "user_id": user_id,
-            },
+            query_params={"user_id": user_id, "user_name": user_name},
         )
 
     async def ban_user_in_whitelist(self, user_id: int) -> Any:
@@ -71,7 +69,7 @@ class AccessControlService(IAccessControlService):
 
         await send_request(
             endpoint=check_access_url,
-            method="POST",
+            method="GET",
             query_params={
                 "user_id": user_id,
             },

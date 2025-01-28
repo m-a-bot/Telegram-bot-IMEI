@@ -38,20 +38,24 @@ async def send_request(
             f"Error during {method} request to {endpoint}, status code: {exc.status}, message: {exc.message}",
             exc_info=exc,
         )
+        raise Exception from exc
 
     except ClientError as exc:
         logging.error(
             f"Client Error during {method} request to {endpoint}", exc_info=exc
         )
+        raise Exception from exc
 
     except json.JSONDecodeError as exc:
         logging.error(
             f"Error decoding JSON for {method} request to {endpoint}",
             exc_info=exc,
         )
+        raise Exception from exc
 
     except Exception as exc:
         logging.error(
             f"Unexpected error during {method} request to {endpoint}",
             exc_info=exc,
         )
+        raise Exception from exc
