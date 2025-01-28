@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "bot"
+version = "0.1.0"
+description = ""
+authors = ["m-a-bot <minnebaev.timur2015@yandex.ru>"]
+readme = "README.md"
+packages = [{ include = "**/*.py", from = "."  }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiogram = "^3.17.0"
+aiohttp = "^3.11.11"
+redis = "^5.2.1"
+pydantic = "^2.10.6"
+pydantic-settings = "^2.7.1"
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.13.2"
+black = "^24.4.2"
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+src_paths = ["app"]
+line_length = 79
+profile = "black"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
