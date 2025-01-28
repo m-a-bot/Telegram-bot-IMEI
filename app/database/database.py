@@ -1,5 +1,6 @@
-from redis.asyncio import Redis
 import logging
+
+from redis.asyncio import Redis
 
 from app.config import settings
 

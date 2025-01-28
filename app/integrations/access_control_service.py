@@ -48,10 +48,7 @@ class AccessControlService(IAccessControlService):
         await send_request(
             endpoint=add_user_to_whitelist_url,
             method="POST",
-            query_params={
-                "user_id": user_id,
-                "user_name": user_name
-            },
+            query_params={"user_id": user_id, "user_name": user_name},
         )
 
     async def ban_user_in_whitelist(self, user_id: int) -> Any:

@@ -15,9 +15,7 @@ class TokenService:
         )
 
     async def get_token(self, user_id: int):
-        token = await self.access_control_service.login_user(
-            user_id
-        )
+        token = await self.access_control_service.login_user(user_id)
         await self._save_token(user_id, token)
         return token
 

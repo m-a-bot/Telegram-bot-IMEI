@@ -28,10 +28,7 @@ class CheckIMEIService(ICheckIMEIService):
         result = await send_request(
             endpoint=check_imei_url,
             method="POST",
-            query_params={
-                "token": token,
-                "user_id": user_id
-            },
+            query_params={"token": token, "user_id": user_id},
             data={"deviceId": imei, "serviceId": service_id},
         )
         return result

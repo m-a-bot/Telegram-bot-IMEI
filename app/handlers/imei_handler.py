@@ -8,8 +8,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.markdown import pre
 from redis import Redis
-from app.config import settings
 
+from app.config import settings
 from app.dependencies import get_dependency
 from app.services.imei_validation_service import IMEIValidationService
 from app.services.token_service import TokenService
@@ -138,7 +138,9 @@ async def check_imei(message: Message, state: FSMContext) -> None:
         token = settings.VALID_TOKEN
 
         imei = message.text
-        imei_json_info = await IMEIValidationService().verify_imei(imei, token, user_id)
+        imei_json_info = await IMEIValidationService().verify_imei(
+            imei, token, user_id
+        )
     except Exception as exc:
         logging.error("Exception", exc_info=exc)
         await state.clear()
