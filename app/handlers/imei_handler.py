@@ -7,8 +7,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.markdown import pre
-from loguru import logger
 from redis import Redis
+from app.config import settings
 
 from app.dependencies import get_dependency
 from app.services.imei_validation_service import IMEIValidationService
@@ -28,8 +28,11 @@ check_router = Router()
 @check_router.message(CommandStart())
 async def command_start(message: Message, state: FSMContext) -> None:
     try:
-        await WhitelistService().add_to_whitelist(message.from_user.id)
+        user_id = message.from_user.id
+        user_name = message.from_user.full_name
+        await WhitelistService().add_to_whitelist(user_id, user_name)
     except Exception as exc:
+        logging.error("Exception", exc_info=exc)
         await state.clear()
         await message.answer(f"Something wrong")
         return
@@ -51,6 +54,7 @@ async def check_command(message: Message, state: FSMContext) -> None:
     try:
         await WhitelistService().check_access(message.from_user.id)
     except Exception as exc:
+        logging.error("Exception", exc_info=exc)
         await state.clear()
         await message.answer(f"Something wrong")
         return
@@ -65,6 +69,7 @@ async def which_imei(message: Message, state: FSMContext) -> None:
     try:
         await WhitelistService().check_access(message.from_user.id)
     except Exception as exc:
+        logging.error("Exception", exc_info=exc)
         await state.clear()
         await message.answer(f"Something wrong")
         return
@@ -85,6 +90,7 @@ async def get_imei(message: Message, state: FSMContext) -> None:
     try:
         await WhitelistService().check_access(message.from_user.id)
     except Exception as exc:
+        logging.error("Exception", exc_info=exc)
         await state.clear()
         await message.answer(f"Something wrong")
         return
@@ -110,28 +116,31 @@ async def check_imei(message: Message, state: FSMContext) -> None:
     try:
         await WhitelistService().check_access(message.from_user.id)
     except Exception as exc:
+        logging.error("Exception", exc_info=exc)
         await state.clear()
         await message.answer(f"Something wrong")
         return
 
-    db: Redis = get_dependency("get_redis")
+    db: Redis = get_dependency("get_db")
     if not db:
         await state.clear()
         await message.answer(f"Bot broke down")
         return
 
     user_id = message.from_user.id
-    user_name = message.from_user.full_name
 
     try:
         token = await TokenService(db).load_token(user_id)
 
-        if not token:
-            token = await TokenService(db).get_token(user_id, user_name)
+        # if not token:
+        #     token = await TokenService(db).get_token(user_id)
+
+        token = settings.VALID_TOKEN
 
         imei = message.text
-        imei_json_info = await IMEIValidationService().verify_imei(imei, token)
+        imei_json_info = await IMEIValidationService().verify_imei(imei, token, user_id)
     except Exception as exc:
+        logging.error("Exception", exc_info=exc)
         await state.clear()
         await message.answer(f"Something wrong")
         return

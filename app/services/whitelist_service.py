@@ -8,8 +8,8 @@ class WhitelistService:
             AccessControlServiceBuilder.build_service(settings)
         )
 
-    async def add_to_whitelist(self, user_id: int):
-        await self.access_control_service.add_user_to_whitelist(user_id)
+    async def add_to_whitelist(self, user_id: int, user_name: str):
+        await self.access_control_service.add_user_to_whitelist(user_id, user_name)
 
     async def remove_from_whitelist(self, user_id: int):
         await self.access_control_service.ban_user_in_whitelist(user_id)

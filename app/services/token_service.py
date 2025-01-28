@@ -14,10 +14,11 @@ class TokenService:
             AccessControlServiceBuilder.build_service(settings)
         )
 
-    async def get_token(self, user_id: int, user_name: str):
+    async def get_token(self, user_id: int):
         token = await self.access_control_service.login_user(
-            user_id, user_name
+            user_id
         )
+        await self._save_token(user_id, token)
         return token
 
     async def load_token(self, user_id: int):

@@ -22,7 +22,7 @@ class AccessControlServiceStub(IAccessControlService):
     def url(self):
         return self.__url
 
-    async def login_user(self, user_id: int, user_name: str) -> Any:
+    async def login_user(self, user_id: int) -> Any:
         if not user_id in self.storage:
             self.storage.append(user_id)
             return self.token
@@ -31,7 +31,7 @@ class AccessControlServiceStub(IAccessControlService):
         if user_id in self.storage:
             self.storage.remove(user_id)
 
-    async def add_user_to_whitelist(self, user_id: int) -> Any:
+    async def add_user_to_whitelist(self, user_id: int, user_name: str) -> Any:
         if not user_id in self.whitelist:
             self.whitelist.append(user_id)
 

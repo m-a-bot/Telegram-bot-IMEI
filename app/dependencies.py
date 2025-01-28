@@ -21,7 +21,7 @@ di_context: ContextVar[DIContainer] = ContextVar(
     "di_context", default=container
 )
 
-container.provide("get_redis", Redis())
+container.provide("get_db", Redis())
 
 
 def get_dependency(name: str):

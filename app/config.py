@@ -20,9 +20,9 @@ class Settings(BaseSettings):
 
     LOGIN_USER_URL: str = "/login_user"
     BAN_USER_URL: str = "/ban_user"
-    ADD_USER_TO_WHITELIST_URL: str = "/whitelist/add_user"
+    ADD_USER_TO_WHITELIST_URL: str = "/whitelist/add_user/"
     BAN_USER_IN_WHITELIST_URL: str = "/whitelist/ban_user"
-    CHECK_ACCESS_URL: str = "/whitelist/check_access"
+    CHECK_ACCESS_URL: str = "/whitelist/check_access/"
     CHECK_IMEI_URL: str = "/api/check-imei"
 
     ACCESS_CONTROL_URL: str
