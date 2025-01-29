@@ -6,6 +6,7 @@ from app.interfaces.access_control_service_interface import (
     IAccessControlService,
 )
 from app.interfaces.imei_validation_service_interface import ICheckIMEIService
+from app.schemas.pyd import IMEICheck
 
 
 class CheckIMEIServiceStub(ICheckIMEIService):
@@ -20,8 +21,10 @@ class CheckIMEIServiceStub(ICheckIMEIService):
     def url(self):
         return self.__url
 
-    async def check_imei(self, imei: str, token: str, service_id: int) -> Any:
-        if len(imei) == 15 and token == self.valid_token:
+    async def check_imei(
+        self, imei_check: IMEICheck, token: str, user_id: int
+    ) -> Any:
+        if len(imei_check.deviceId) == 15 and token == self.valid_token:
             return {
                 "success": True,
                 "error": "Only Apple devices supported. This device is a NA.",

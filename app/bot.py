@@ -16,7 +16,6 @@ from aiogram.webhook.aiohttp_server import (
 from aiohttp import web
 
 from app.config import settings
-from app.dependencies import di_middleware
 from handlers.imei_handler import check_router
 
 # Bot token can be obtained via https://t.me/BotFather
@@ -33,7 +32,6 @@ BASE_WEBHOOK_URL = settings.BASE_WEBHOOK_URL
 async def on_startup(bot: Bot) -> None:
     # If you have a self-signed SSL certificate, then you will need to send a public
     # certificate to Telegram
-    print(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
     await bot.set_webhook(
         f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}",
         secret_token=WEBHOOK_SECRET,
@@ -44,7 +42,6 @@ def main() -> None:
     # Dispatcher is a root router
     dp = Dispatcher()
     # ... and all other routers should be attached to Dispatcher
-    dp.message.middleware(di_middleware)
     dp.include_router(check_router)
 
     # Register startup hook to initialize webhook

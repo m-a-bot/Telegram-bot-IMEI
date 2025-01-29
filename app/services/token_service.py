@@ -1,3 +1,5 @@
+import logging
+
 from app.config import settings
 from app.integrations.factories import AccessControlServiceBuilder
 from app.repositories.factories import TokenRepositoryBuilder
@@ -15,7 +17,13 @@ class TokenService:
         )
 
     async def get_token(self, user_id: int):
-        token = await self.access_control_service.login_user(user_id)
+        response = await self.access_control_service.login_user(user_id)
+        token = response.get("token")
+
+        if isinstance(token, dict) or token is None:
+            logging.warning("Token for user already exists")
+            raise Exception
+
         await self._save_token(user_id, token)
         return token
 

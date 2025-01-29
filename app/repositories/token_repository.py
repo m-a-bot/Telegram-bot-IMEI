@@ -12,11 +12,18 @@ class TokenRepository(ITokenRepository):
 
     async def add_token(self, user_id: int, token: str):
         user_key = f"{TOKENS_KEY}:{user_id}"
-        await self._session.set(
-            user_key, token, ex=settings.TOKEN_TTL - settings.BUFFER_TTL
+        result = await self._session.set(
+            user_key,
+            token,
+            ex=settings.TOKEN_TTL - settings.BUFFER_TTL,
+            nx=True,
         )
+        return result
 
     async def delete_token(self, user_id):
+        if await self.get_token(user_id) is None:
+            return None
+
         user_key = f"{TOKENS_KEY}:{user_id}"
         return await self._session.delete(user_key)
 

@@ -1,16 +1,24 @@
 import json
 import logging
+from typing import Any
 
+import aiohttp
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.markdown import pre
+from aiohttp.client_exceptions import ClientResponseError
 from redis import Redis
 
 from app.config import settings
-from app.dependencies import get_dependency
+from app.database.database import async_redis
+from app.exceptions import (
+    AccessDeniedError,
+    InvalidDataError,
+    UserAlreadyExistsError,
+)
 from app.services.imei_validation_service import IMEIValidationService
 from app.services.token_service import TokenService
 from app.services.whitelist_service import WhitelistService
@@ -31,6 +39,8 @@ async def command_start(message: Message, state: FSMContext) -> None:
         user_id = message.from_user.id
         user_name = message.from_user.full_name
         await WhitelistService().add_to_whitelist(user_id, user_name)
+    except UserAlreadyExistsError:
+        logging.error("User already exists in whitelist")
     except Exception as exc:
         logging.error("Exception", exc_info=exc)
         await state.clear()
@@ -53,6 +63,11 @@ async def help_command(message: Message, state: FSMContext) -> None:
 async def check_command(message: Message, state: FSMContext) -> None:
     try:
         await WhitelistService().check_access(message.from_user.id)
+    except AccessDeniedError:
+        logging.error("User doesn't exists in whitelist")
+        await state.clear()
+        await message.answer(f"access is restricted")
+        return
     except Exception as exc:
         logging.error("Exception", exc_info=exc)
         await state.clear()
@@ -68,6 +83,11 @@ async def check_command(message: Message, state: FSMContext) -> None:
 async def which_imei(message: Message, state: FSMContext) -> None:
     try:
         await WhitelistService().check_access(message.from_user.id)
+    except AccessDeniedError:
+        logging.error("User doesn't exists in whitelist")
+        await state.clear()
+        await message.answer(f"access is restricted")
+        return
     except Exception as exc:
         logging.error("Exception", exc_info=exc)
         await state.clear()
@@ -79,7 +99,7 @@ async def which_imei(message: Message, state: FSMContext) -> None:
     await message.answer(
         (
             "Write your *IMEI* \n\nto get detailed info about your phone\n\n"
-            "*example* \- `000000000000000`"
+            "*example* \- `356735111052198`"
         ),
         parse_mode="MarkdownV2",
     )
@@ -89,6 +109,11 @@ async def which_imei(message: Message, state: FSMContext) -> None:
 async def get_imei(message: Message, state: FSMContext) -> None:
     try:
         await WhitelistService().check_access(message.from_user.id)
+    except AccessDeniedError:
+        logging.error("User doesn't exists in whitelist")
+        await state.clear()
+        await message.answer(f"access is restricted")
+        return
     except Exception as exc:
         logging.error("Exception", exc_info=exc)
         await state.clear()
@@ -100,7 +125,8 @@ async def get_imei(message: Message, state: FSMContext) -> None:
         await state.set_state(CheckProcess.check_imei)
 
         await message.answer(f"Check *IMEI*: {imei}", parse_mode="MarkdownV2")
-        await check_imei(message, state)
+
+        await check_imei(message, state, imei)
         return
 
     if "cancel" in message.text.lower():
@@ -112,35 +138,45 @@ async def get_imei(message: Message, state: FSMContext) -> None:
 
 
 @check_router.message(CheckProcess.check_imei)
-async def check_imei(message: Message, state: FSMContext) -> None:
+async def check_imei(message: Message, state: FSMContext, imei: str) -> None:
     try:
         await WhitelistService().check_access(message.from_user.id)
+    except AccessDeniedError:
+        logging.error("User doesn't exists in whitelist")
+        await state.clear()
+        await message.answer(f"access is restricted")
+        return
     except Exception as exc:
         logging.error("Exception", exc_info=exc)
         await state.clear()
         await message.answer(f"Something wrong")
         return
 
-    db: Redis = get_dependency("get_db")
-    if not db:
-        await state.clear()
-        await message.answer(f"Bot broke down")
-        return
-
     user_id = message.from_user.id
 
     try:
-        token = await TokenService(db).load_token(user_id)
+        async with async_redis.client() as db:
+            try:
+                token = await TokenService(db).load_token(user_id)
 
-        # if not token:
-        #     token = await TokenService(db).get_token(user_id)
+                if token is None:
+                    token = await TokenService(db).get_token(user_id)
 
-        token = settings.VALID_TOKEN
+                imei_json_info = await IMEIValidationService().verify_imei(
+                    imei, token, user_id
+                )
+            finally:
+                await db.close()
+    except AccessDeniedError:
+        await state.clear()
+        await message.answer(f"access is restricted")
+        return
+    except InvalidDataError as exc:
+        logging.error("Invalid data", exc_info=exc)
+        await message.answer(f"Try again. Invalid data")
+        await state.set_state(CheckProcess.get_data)
+        return
 
-        imei = message.text
-        imei_json_info = await IMEIValidationService().verify_imei(
-            imei, token, user_id
-        )
     except Exception as exc:
         logging.error("Exception", exc_info=exc)
         await state.clear()
