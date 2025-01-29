@@ -7,6 +7,7 @@ from app.config import settings
 async_redis = Redis(
     host=settings.REDIS_HOST,
     port=settings.REDIS_PORT,
+    db=settings.REDIS_DB,
     username=settings.REDIS_USER,
     password=settings.REDIS_PASSWORD,
     decode_responses=True,
@@ -15,7 +16,7 @@ async_redis = Redis(
 # logging.info(f"{settings.REDIS_HOST}:{settings.REDIS_PORT}")
 
 
-async def get_db():
+async def get_redis():
     async with async_redis.client() as redis:
         try:
             yield redis

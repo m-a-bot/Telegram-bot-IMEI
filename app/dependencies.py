@@ -2,6 +2,7 @@ from contextvars import ContextVar
 
 from redis import Redis
 
+from app.database.database import get_redis
 from app.middlewares.di_middleware import DIMiddleware
 
 
@@ -21,7 +22,7 @@ di_context: ContextVar[DIContainer] = ContextVar(
     "di_context", default=container
 )
 
-container.provide("get_db", Redis())
+container.provide("get_redis", get_redis)
 
 
 def get_dependency(name: str):

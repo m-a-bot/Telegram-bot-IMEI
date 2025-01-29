@@ -1,5 +1,6 @@
 from app.config import settings
 from app.integrations.factories import CheckIMEIServiceBuilder
+from app.schemas.pyd import IMEICheck
 
 
 class IMEIValidationService:
@@ -9,6 +10,7 @@ class IMEIValidationService:
         )
 
     async def verify_imei(self, imei: str, token: str, user_id: int):
+        imei_check = IMEICheck(deviceId=imei, serviceId=settings.SERVICE_ID)
         return await self.check_imei_service.check_imei(
-            imei, token, user_id, settings.SERVICE_ID
+            imei_check, token, user_id
         )
